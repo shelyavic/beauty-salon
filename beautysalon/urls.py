@@ -29,6 +29,7 @@ urlpatterns = [
         }
     ),
     path('', include('main.urls')),
+    path('', include('users.urls')),
 
     
 ]
