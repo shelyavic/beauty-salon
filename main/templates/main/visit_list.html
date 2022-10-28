@@ -1,0 +1,38 @@
+{% extends 'main/base.html' %}
+{% load custom_tags %}
+{% block content %}
+<h1>Visits</h1>
+<p>
+<ul>
+  {% for visit in visit_list %}
+    <li>
+        <a href="{% url 'main:visit_detail' visit.id %}">
+          {{ visit.date_time }}
+          {% if user|has_group:'Master' %}
+          ,{{ visit.service }}
+          ,{{ visit.client }}
+          {% endif %}
+        </a>
+        {% if visit.client == user or user|has_group:'Master' %}
+        (<a href="{% url 'main:visit_update' visit.id %}">Edit</a> | 
+        <a href="{% url 'main:visit_delete' visit.id %}">Delete</a>)
+        {% endif %}
+    </li>
+  {% empty %}
+  <p>There are no visits in the database.</p>
+  {% endfor %}
+</ul>
+
+</p>
+<p>
+<a href="{% url 'main:visit_create' %}">Add a Visit</a> |
+{% if perms.main.view_service %}
+<a href="{% url 'main:service_all' %}">View Services</a> |
+{% endif %}
+{% if user.is_authenticated %}
+<a href="{% url 'logout' %}?next={% url 'main:visit_all' %}">Logout</a>
+{% else %}
+<a href="{% url 'login' %}?next={% url 'main:visit_all' %}">Login</a>
+{% endif %}
+</p>
+{% endblock %}

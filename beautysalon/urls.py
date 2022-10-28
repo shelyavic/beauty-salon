@@ -28,8 +28,9 @@ urlpatterns = [
             'document_root': BASE_DIR / 'static/img',
         }
     ),
+    path('accounts/', include('django.contrib.auth.urls')),
     path('', include('main.urls')),
-    path('', include('users.urls')),
+    path('users/', include('users.urls')),
 
     
 ]

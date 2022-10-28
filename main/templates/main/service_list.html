@@ -1,0 +1,33 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<h1>Services</h1>
+<p>
+{% if service_list %}
+<ul>
+  {% for service in service_list %}
+    <li>
+        {{ service.name }} | {{ service.duration }}
+        {% if perms.main.change_service %}
+        (<a href="{% url 'main:service_update' service.id %}">Edit</a>
+        {% endif %} |
+        {% if perms.main.delete_visit %}
+        <a href="{% url 'main:service_delete' service.id %}">Delete</a>)
+        {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+{% else %}
+  <p>There are no services in the database.</p>
+{% endif %}
+</p>
+<p>
+<a href="{% url 'main:service_create' %}">Add a Service</a> |
+<a href="{% url 'main:visit_all' %}">View Visits</a> |
+
+{% if user.is_authenticated %}
+<a href="{% url 'logout' %}?next={% url 'main:visit_all' %}">Logout</a>
+{% else %}
+<a href="{% url 'login' %}?next={% url 'main:visit_all' %}">Login</a>
+{% endif %}
+</p>
+{% endblock %}

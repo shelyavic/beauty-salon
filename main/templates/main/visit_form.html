@@ -1,0 +1,21 @@
+{% extends 'main/base.html' %}
+{% load django_bootstrap5 %}
+
+{% block head %}
+{{ block.super }}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+{{ form.media }}
+{% endblock %}
+
+{% block content %}
+<p>
+  <form method="post">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
+    {% with success_url=view.success_url %}
+      {% bootstrap_button "Cancel" href=success_url button_class="btn btn-secondary" %}
+    {% endwith %}
+  </form>
+</p>
+{% endblock %}
