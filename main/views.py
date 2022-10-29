@@ -3,9 +3,11 @@ from django.urls import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
 from django.views.generic import ListView, DetailView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
+
 from main.models import Visit, Service
 from main.forms import ClientVisitForm, MasterVisitForm
-
+from main.utils import has_group
 
 #---------Service----------
 class ServiceListView(ListView):
@@ -16,19 +18,19 @@ class ServiceDetailView(DetailView):
     model = Service
 
 
-class ServiceCreateView(CreateView):
+class ServiceCreateView(PermissionRequiredMixin, CreateView):
     model = Service
     fields = '__all__'
     template_name = 'main/form.html'
     success_url = reverse_lazy('main:service_all')
 
-class ServiceUpdateView(UpdateView):
+class ServiceUpdateView(PermissionRequiredMixin, UpdateView):
     model = Service
     fields = '__all__'
     template_name = 'main/form.html'
     success_url = reverse_lazy('main:service_all')
 
-class ServiceDeleteView(DeleteView):
+class ServiceDeleteView(PermissionRequiredMixin, DeleteView):
     model = Service
     success_url = reverse_lazy('main:service_all')
 
@@ -47,13 +49,13 @@ class VisitDetailView(DetailView):
 
 
 
-class VisitCreateView(CreateView):
+class VisitCreateView(LoginRequiredMixin, CreateView):
     template_name = 'main/visit_form.html'
     success_url = reverse_lazy('main:visit_all')
     master_group = 'Master'
     
     def form_valid(self, form):
-        if not self.request.user.groups.filter(name=self.master_group).exists():
+        if not has_group(self.request.user, self.master_group):
             obj = form.save(commit=False)
             obj.client = self.request.user
             obj.save()
@@ -62,7 +64,7 @@ class VisitCreateView(CreateView):
         return super(CreateView, self).form_valid(form)
 
     def get_form_class(self, *args, **kwargs):
-        if self.request.user.groups.filter(name=self.master_group).exists():
+        if has_group(self.request.user, self.master_group):
             return MasterVisitForm
         else:
             return ClientVisitForm
@@ -94,25 +96,32 @@ class VisitCreateView(CreateView):
                 return render(request, self.template, {'form': form })
 """
 
-class VisitUpdateView(UpdateView):
+class VisitUpdateView(LoginRequiredMixin, UpdateView):
     model = Visit
     template_name = 'main/visit_form.html'
     master_group = 'Master'
     success_url = reverse_lazy('main:visit_all')
 
     def get_form_class(self, *args, **kwargs):
-        if self.request.user.groups.filter(name=self.master_group).exists():
+        if has_group(self.request.user, self.master_group):
             return MasterVisitForm
         else:
             return ClientVisitForm
 
     def get_queryset(self):
         qs = super().get_queryset()
-        return qs.filter(client=self.request.user)
+        if not has_group(self.request.user, self.master_group):
+            qs = qs.filter(client=self.request.user)
+        return qs
 
 
-class VisitDeleteView(DeleteView):
+class VisitDeleteView(LoginRequiredMixin, DeleteView):
     model = Visit
+    success_url = reverse_lazy('main:visit_all')
+    master_group = 'Master'
+    
     def get_queryset(self):
         qs = super().get_queryset()
-        return qs.filter(client=self.request.user)
+        if not has_group(self.request.user, self.master_group):
+            qs = qs.filter(client=self.request.user)
+        return qs
