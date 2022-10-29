@@ -1,4 +1,5 @@
 {% extends 'main/base.html' %}
+{% load django_bootstrap5 %}
 {% load custom_tags %}
 {% block content %}
 <h1>Visits</h1>
@@ -14,8 +15,10 @@
           , {{ visit.client }}
           {% endif %}
         {% if visit.client == user or user|has_group:'Master' %}
-        (<a href="{% url 'main:visit_update' visit.id %}">Edit</a> | 
-        <a href="{% url 'main:visit_delete' visit.id %}">Delete</a>)
+          {% url 'main:visit_update' visit.id as update_url %}
+          {% bootstrap_button "Edit" href=update_url button_class="btn btn-secondary" %} 
+          {% url 'main:visit_delete' visit.id as delete_url%}
+          {% bootstrap_button "Delete" href=delete_url button_class="btn btn-danger" %}
         {% endif %}
     </li>
   {% empty %}

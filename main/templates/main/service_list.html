@@ -1,4 +1,5 @@
 {% extends 'main/base.html' %}
+{% load django_bootstrap5 %}
 {% block content %}
 <h1>Services</h1>
 <p>
@@ -8,10 +9,12 @@
     <li>
         {{ service.name }} | {{ service.duration }}
         {% if perms.main.change_service %}
-        (<a href="{% url 'main:service_update' service.id %}">Edit</a>
-        {% endif %} |
+          {% url 'main:service_update' service.id as update_url %}
+          {% bootstrap_button "Edit" href=update_url button_class="btn btn-secondary" %}
+        {% endif %} 
         {% if perms.main.delete_service %}
-        <a href="{% url 'main:service_delete' service.id %}">Delete</a>)
+          {% url 'main:service_delete' service.id as delete_url%}
+          {% bootstrap_button "Delete" href=delete_url button_class="btn btn-danger" %}
         {% endif %}
     </li>
   {% endfor %}
