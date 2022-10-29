@@ -5,6 +5,8 @@ asgiref=3.5.2=pyhd8ed1ab_0
 bzip2=1.0.8=h8ffe710_4
 ca-certificates=2022.9.24=h5b45459_0
 django=4.1.2=py39hcbf5309_0
+django-bootstrap-datepicker-plus=4.0.0=pypi_0
+django-bootstrap5=22.1=pypi_0
 django-phonenumber-field=7.0.0=pypi_0
 libffi=3.4.2=h8ffe710_5
 libsqlite=3.39.4=hcfcfb64_0
