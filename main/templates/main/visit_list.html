@@ -6,13 +6,13 @@
 <ul>
   {% for visit in visit_list %}
     <li>
-        <a href="{% url 'main:visit_detail' visit.id %}">
           {{ visit.date_time }}
+          {% if visit.client == user or user|has_group:'Master' %}
+          , {{ visit.service }}
+          {% endif%}
           {% if user|has_group:'Master' %}
-          ,{{ visit.service }}
-          ,{{ visit.client }}
+          , {{ visit.client }}
           {% endif %}
-        </a>
         {% if visit.client == user or user|has_group:'Master' %}
         (<a href="{% url 'main:visit_update' visit.id %}">Edit</a> | 
         <a href="{% url 'main:visit_delete' visit.id %}">Delete</a>)

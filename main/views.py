@@ -14,26 +14,23 @@ class ServiceListView(ListView):
     model = Service
 
 
-class ServiceDetailView(DetailView):
-    model = Service
-
-
 class ServiceCreateView(PermissionRequiredMixin, CreateView):
     model = Service
     fields = '__all__'
-    template_name = 'main/form.html'
     success_url = reverse_lazy('main:service_all')
+    permission_required = ('main.add_service',)
+
 
 class ServiceUpdateView(PermissionRequiredMixin, UpdateView):
     model = Service
     fields = '__all__'
-    template_name = 'main/form.html'
     success_url = reverse_lazy('main:service_all')
+    permission_required = ('main.change_service',)
 
 class ServiceDeleteView(PermissionRequiredMixin, DeleteView):
     model = Service
     success_url = reverse_lazy('main:service_all')
-
+    permission_required = ('main.delete_service',)
 
 #---------Visit-----------
 class VisitListView(ListView):
@@ -42,11 +39,6 @@ class VisitListView(ListView):
         data = super().get_context_data(**kwargs)
         print(data)
         return data
-
-
-class VisitDetailView(DetailView):
-    model = Visit
-
 
 
 class VisitCreateView(LoginRequiredMixin, CreateView):
