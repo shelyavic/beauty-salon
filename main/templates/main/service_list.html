@@ -7,7 +7,8 @@
 <ul>
   {% for service in service_list %}
     <li>
-        {{ service.name }} | {{ service.duration }}
+        {{ service.name }} | {{ service.duration.seconds }}
+        <div class="btn-group" role="group" aria-label="Basic example">
         {% if perms.main.change_service %}
           {% url 'main:service_update' service.id as update_url %}
           {% bootstrap_button "Edit" href=update_url button_class="btn btn-secondary" %}
@@ -16,6 +17,7 @@
           {% url 'main:service_delete' service.id as delete_url%}
           {% bootstrap_button "Delete" href=delete_url button_class="btn btn-danger" %}
         {% endif %}
+        </div>
     </li>
   {% endfor %}
 </ul>
