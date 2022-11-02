@@ -1,15 +1,9 @@
 {% extends 'main/base.html' %}
-{% load django_bootstrap5 %}
-
-{% block content %}
-<p>
-  <form method="post">
-    {% csrf_token %}
-    {% bootstrap_form form %}
-    {% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
-    {% with success_url=view.success_url %}
-      {% bootstrap_button "Cancel" href=success_url button_class="btn btn-secondary" %}
-    {% endwith %}
-  </form>
-</p>
+{% load static %}
+{% block head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'main/form.css' %}">
 {% endblock %}
+{% block content %}
+{% include 'main/form.html' %}
+{% endblock content %}
