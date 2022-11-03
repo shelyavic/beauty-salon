@@ -43,9 +43,16 @@ class VisitListView(ListView):
         return data
 
 
-class VisitCreateView(LoginRequiredMixin, CreateView):
-    template_name = 'main/visit_form.html'
-    success_url = reverse_lazy('main:visit_all')
+class GetQuerySetMixin:
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if not has_group(self.request.user, settings.MASTER_GROUP_NAME):
+            queryset = queryset.filter(client=self.request.user)
+        return queryset
+
+
+class FormValidMixin:
+    exclude_object = False
 
     def form_valid(self, form):
         new_date_time = form.cleaned_data.get('date_time')
@@ -54,14 +61,43 @@ class VisitCreateView(LoginRequiredMixin, CreateView):
         if new_date_time.date() <= datetime.now().date(): 
             form.add_error('date_time', _('Сan\'t create an entry for a past date'))
             return self.form_invalid(form)
-
-        visits_on_date = Visit.objects.filter(date_time__date=new_date_time.date())
-        for visit in visits_on_date:
+        
+        visits_date = Visit.objects.filter(date_time__date=new_date_time.date())
+        if self.exclude_object:
+            visits_date = visits_date.exclude(id=self.get_object().id)
+            
+        for visit in visits_date:
             if (visit.date_time < new_date_time < visit.end_date_time
                     or visit.date_time < (new_date_time+new_service.duration)
                         < visit.end_date_time ):
                 form.add_error('date_time', _('Requested date and time are already taken'))
                 return self.form_invalid(form)
+    
+    def get_form_class(self, *args, **kwargs):
+        if has_group(self.request.user, settings.MASTER_GROUP_NAME):
+            return MasterVisitForm
+        else:
+            return ClientVisitForm
+
+class VisitCreateView(FormValidMixin, LoginRequiredMixin, CreateView):
+    template_name = 'main/visit_form.html'
+    success_url = reverse_lazy('main:visit_all')
+
+    def form_valid(self, form):
+        # new_date_time = form.cleaned_data.get('date_time')
+        # new_service = form.cleaned_data.get('service')
+        
+        # if new_date_time.date() <= datetime.now().date(): 
+        #     form.add_error('date_time', _('Сan\'t create an entry for a past date'))
+        #     return self.form_invalid(form)
+
+        # visits_on_date = Visit.objects.filter(date_time__date=new_date_time.date())
+        # for visit in visits_on_date:
+        #     if (visit.date_time < new_date_time < visit.end_date_time
+        #             or visit.date_time < (new_date_time+new_service.duration)
+        #                 < visit.end_date_time):
+        #         form.add_error('date_time', _('Requested date and time are already taken'))
+        #         return self.form_invalid(form)
 
         if not has_group(self.request.user, settings.MASTER_GROUP_NAME):
             obj = form.save(commit=False)
@@ -71,54 +107,55 @@ class VisitCreateView(LoginRequiredMixin, CreateView):
             form.save()
         return super().form_valid(form)
 
-    def get_form_class(self, *args, **kwargs):
-        if has_group(self.request.user, settings.MASTER_GROUP_NAME):
-            return MasterVisitForm
-        else:
-            return ClientVisitForm
+    # def get_form_class(self, *args, **kwargs):
+    #     if has_group(self.request.user, settings.MASTER_GROUP_NAME):
+    #         return MasterVisitForm
+    #     else:
+    #         return ClientVisitForm
 
 
-class VisitUpdateView(LoginRequiredMixin, UpdateView):
+class VisitUpdateView(GetQuerySetMixin, FormValidMixin, LoginRequiredMixin, UpdateView):
     model = Visit
     template_name = 'main/visit_form.html'
     success_url = reverse_lazy('main:visit_all')
+    exclude_object = True
 
-    def get_form_class(self, *args, **kwargs):
-        if has_group(self.request.user, settings.MASTER_GROUP_NAME):
-            return MasterVisitForm
-        else:
-            return ClientVisitForm
+    # def get_form_class(self, *args, **kwargs):
+    #     if has_group(self.request.user, settings.MASTER_GROUP_NAME):
+    #         return MasterVisitForm
+    #     else:
+    #         return ClientVisitForm
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        if not has_group(self.request.user, settings.MASTER_GROUP_NAME):
-            queryset = queryset.filter(client=self.request.user)
-        return queryset
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     if not has_group(self.request.user, settings.MASTER_GROUP_NAME):
+    #         queryset = queryset.filter(client=self.request.user)
+    #     return queryset
 
-    def form_valid(self, form):
-        new_date_time = form.cleaned_data.get('date_time')
-        new_service = form.cleaned_data.get('service')
+    # def form_valid(self, form):
+    #     new_date_time = form.cleaned_data.get('date_time')
+    #     new_service = form.cleaned_data.get('service')
         
-        if new_date_time.date() <= datetime.now().date(): 
-            form.add_error('date_time', _('Сan\'t create an entry for a past date'))
-            return self.form_invalid(form)
+    #     if new_date_time.date() <= datetime.now().date(): 
+    #         form.add_error('date_time', _('Сan\'t create an entry for a past date'))
+    #         return self.form_invalid(form)
 
-        visits_on_date = Visit.objects.filter(date_time__date=new_date_time.date()).exclude(id=self.get_object().id)
-        for visit in visits_on_date:
-            if (visit.date_time < new_date_time < visit.end_date_time
-                    or visit.date_time < (new_date_time+new_service.duration)
-                        < visit.end_date_time ):
-                form.add_error('date_time', _('Requested date and time are already taken'))
-                return self.form_invalid(form)
-        return super().form_valid(form)
+    #     visits_on_date = Visit.objects.filter(date_time__date=new_date_time.date()).exclude(id=self.get_object().id)
+    #     for visit in visits_on_date:
+    #         if (visit.date_time < new_date_time < visit.end_date_time
+    #                 or visit.date_time < (new_date_time+new_service.duration)
+    #                     < visit.end_date_time ):
+    #             form.add_error('date_time', _('Requested date and time are already taken'))
+    #             return self.form_invalid(form)
+    #     return super().form_valid(form)
 
 
-class VisitDeleteView(LoginRequiredMixin, DeleteView):
+class VisitDeleteView(GetQuerySetMixin, LoginRequiredMixin, DeleteView):
     model = Visit
     success_url = reverse_lazy('main:visit_all')
     
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        if not has_group(self.request.user, settings.MASTER_GROUP_NAME):
-            queryset = queryset.filter(client=self.request.user)
-        return queryset
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     if not has_group(self.request.user, settings.MASTER_GROUP_NAME):
+    #         queryset = queryset.filter(client=self.request.user)
+    #     return queryset
