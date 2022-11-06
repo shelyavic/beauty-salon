@@ -110,6 +110,8 @@ ENV/
 env.bak/
 venv.bak/
 
+django4
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -130,3 +132,7 @@ dmypy.json
 
 # Visual studio code
 .vscode
+
+# drawio
+.drawio
+
