@@ -1,0 +1,32 @@
+<input type="{{ widget.type }}" 
+        name="{{ widget.name }}" 
+        id="text-input" 
+        {% if widget.value != None %} 
+            value="{{ widget.value|stringformat:'s' }}"
+        {% endif %}
+        {% include "django/forms/widgets/attrs.html" %}
+        >
+<input type="range" 
+        id="range-input" 
+        oninput="range2duration()" 
+        max="{{widget.max_range}}" 
+        step="{{widget.step}}"
+        >
+<script>
+
+    function to2digits(number){
+        return number.toString().padStart(2, '0');
+    }
+
+    function range2duration(){
+        let range = document.getElementById("range-input");
+        let text = document.getElementById("text-input");
+        let seconds = range.value;
+        let minutes = Math.floor(seconds / 60);
+        let hours = Math.floor(minutes / 60);
+        minutes = minutes % 60
+        seconds = seconds % 60
+        text.value = `${to2digits(hours)}:${to2digits(minutes)}:${to2digits(seconds)}`;
+    }
+
+</script>

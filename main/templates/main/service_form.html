@@ -1,0 +1,9 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'main/form.css' %}">
+{% endblock %}
+{% block content %}
+{% include 'main/form.html' %}
+{% endblock content %}

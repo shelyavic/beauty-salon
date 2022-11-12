@@ -1,0 +1,22 @@
+{% extends "main/base.html" %}
+{% load django_bootstrap5 %}
+{% load custom_tags %}
+{% block content %}
+<h1>Delete Visit</h1>
+
+<p>Are you sure you want to delete this visit?</p>
+<p>Date and time: {{ visit.date_time }}</p>
+<p>Service: {{ visit.service }}</p>
+{% if user|has_group:'Master' %}
+<p>Client: {{ visit.client }}</p>
+{% endif %}
+
+
+<form method="POST">
+  {% csrf_token %}
+  {% bootstrap_button "Yes, delete" button_type="submit" button_class="btn-primary" %}
+  {% with success_url=view.success_url %}
+      {% bootstrap_button "Cancel" href=success_url button_class="btn btn-secondary" %}
+  {% endwith %}
+</form>
+{% endblock %}

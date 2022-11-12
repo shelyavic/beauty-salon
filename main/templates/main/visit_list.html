@@ -1,0 +1,51 @@
+{% extends 'main/base.html' %}
+{% load django_bootstrap5 %}
+{% load custom_tags %}
+{% block content %}
+<h1>Visits</h1>
+<p>
+  {% regroup visit_list by date_time.date as dates_list %}
+  <ul class="list-group">
+    {% for date in dates_list %}
+    <li class="list-group-item">
+      {{ date.grouper|date:'l, d F' }}
+      <ul class="list-group list-group-flush">
+          {% for visit in date.list %}
+          <li class="list-group-item">
+            {{ visit.date_time }}
+            {% if visit.client == user or user|has_group:'Master' %}
+            , {{ visit.service }}
+            {% endif%}
+            {% if user|has_group:'Master' %}
+            , {{ visit.client }}
+            {% endif %}
+            <div class="btn-group" role="group" aria-label="Basic example">
+              {% if visit.client == user or user|has_group:'Master' %}
+                {% url 'main:visit_update' visit.id as update_url %}
+                {% bootstrap_button "Edit" href=update_url button_class="btn btn-secondary" %}
+                {% url 'main:visit_delete' visit.id as delete_url%}
+                {% bootstrap_button "Delete" href=delete_url button_class="btn btn-danger" %}
+              {% endif %}
+            </div>
+          </li> 
+          {% endfor %}
+      </ul>
+      {% empty %}
+      <p>There are no visits in the database.</p>
+      {% endfor %}
+    </li>
+  </ul>
+
+</p>
+<p>
+<a href="{% url 'main:visit_create' %}">Add a Visit</a> |
+{% if perms.main.view_service %}
+<a href="{% url 'main:service_all' %}">View Services</a> |
+{% endif %}
+{% if user.is_authenticated %}
+<a href="{% url 'logout' %}?next={% url 'main:visit_all' %}">Logout</a>
+{% else %}
+<a href="{% url 'login' %}?next={% url 'main:visit_all' %}">Login</a>
+{% endif %}
+</p>
+{% endblock %}
